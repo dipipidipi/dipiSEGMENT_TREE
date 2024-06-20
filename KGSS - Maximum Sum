@@ -1,0 +1,147 @@
+//https://vn.spoj.com/problems/KGSS/
+#include <bits/stdc++.h>
+
+using namespace std;
+
+#define int long long
+
+int n, q, a[100011];
+
+struct block
+{
+    int max1, max2;
+}T[4*100011];
+
+void compare(block &res, int val)
+{
+    if (res.max1 < val)
+    {
+        res.max2 = res.max1;
+        res.max1 = val;
+    }
+    else if (res.max2 < val)
+    {
+        res.max2 = val;
+    }
+}
+
+block combine(block x, block y)
+{
+    block res = block({INT_MIN, INT_MIN});
+
+    compare(res, x.max1);
+    compare(res, x.max2);
+    compare(res, y.max1);
+    compare(res, y.max2);
+
+    return res;
+
+}
+
+void build_tree(int id, int l, int r)
+{               /// id là chỉ số đỉnh trong mảng T của nút đang xét
+    if (l == r)
+    {
+        T[id] = block({a[l], INT_MIN});
+        return;
+    }
+    int mid = l+r >> 1;
+
+    build_tree(id << 1, l, mid);
+    build_tree(id << 1 | 1, mid+1, r);
+
+    T[id] = combine(T[id << 1], T[id << 1 | 1]);
+}
+
+void read()
+{
+    cin >> n;
+    for (int i = 1; i <= n; ++i)
+    {
+        cin >> a[i];
+    }
+}
+
+block query(int id, int l, int r, int u, int v)
+{                               /// đảm bảo u <= v
+    if (u > r or v < l)
+        return block({INT_MIN, INT_MIN});
+
+    if (u <= l and r <= v)
+    {
+        /// đoạn l, r nằm trong hẳn đoạn u, v
+        return T[id];
+    }
+
+    int mid = l+r >> 1;
+
+    block lef = query(id << 1, l, mid, u, v);
+    block righ = query(id << 1 | 1, mid+1, r, u, v);
+
+    block ans = combine(lef, righ);
+    return ans;
+}
+
+void update(int id, int l, int r, int i, int val)
+{
+    /// nút id quản lý đoạn từ l->r
+    if (l > i or r < i)
+        return;
+
+    if (l == r)
+    {
+        T[id] = block({val, INT_MIN});
+        return;
+    }
+
+    int mid = l+r >> 1;
+
+    update(id << 1, l, mid, i, val);
+    update(id << 1 | 1, mid+1, r, i, val);
+
+    T[id] = combine(T[id << 1], T[id << 1 | 1]);
+}
+
+char type;
+int i1, i2;
+void solve()
+{
+    cin >> type >> i1 >> i2;
+    if (type == 'U')
+    {
+        update(1, 1, n, i1, i2);
+    }
+    else
+    {
+        block ans = query(1, 1, n, i1, i2);
+        cout << ans.max1 + ans.max2 << '\n';
+    }
+}
+
+void process()
+{
+    read();
+    build_tree(1, 1, n);
+
+    cin >> q;
+    while(q--)
+    {
+        solve();
+    }
+}
+signed main()
+{
+    // Nhanh hơn
+    cin.tie(0)->sync_with_stdio(0);
+
+    #define task "phcbaka"
+    if (fopen(task ".inp", "r")) // Kiểm tra xem có đọc vào từ file không
+    {
+        freopen(task ".inp", "r", stdin);
+        freopen(task ".out", "w", stdout);
+    }
+
+    process();
+
+    return 0;
+}
