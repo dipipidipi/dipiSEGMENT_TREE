@@ -145,3 +145,6 @@ signed main()
 
     return 0;
 }
+/// một cách khác là Tree lưu 2 trường là lớn nhất và vị trí của con lớn nhất
+/// mỗi lần tìm ra con lớn nhất, cập nhật con lớn nhất đấy thành -inf, tìm lại -> ra con lớn nhì
+/// xong thì cập nhật lại
