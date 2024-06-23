@@ -1,0 +1,199 @@
+//https://i.imgur.com/0bWBu6n.jpeg
+#include<bits/stdc++.h>
+using namespace std;
+
+#define y1 as214
+#define ii pair < int , int >
+#define iii pair < int , ii >
+#define iv pair < ii , ii >
+
+#define fi first
+#define se second
+#define fr front()
+#define pb push_back
+
+
+#define FOR(i , x , n) for(ll i = x ; i <= n ; ++i)
+#define REP(i , n) for(ll i = 0 ; i < n ; ++i)
+#define FORD(i , x , n) for(ll i = x ; i >= n ; --i)
+
+#define ll long long
+#define oo 1e18
+#define int long long
+#define eps 1e-8
+
+const int N = 2e5 + 5;
+int n , m , q;
+
+struct Data{
+    int sum = 0, lazy = 0 , mini = 0 , cnt_mini = 0 , maxi = 0 , cnt_maxi = 0 , gc = 0 , cnt_gc = 0 , lc = 0 , cnt_lc = 0;
+};
+
+Data emp;
+
+Data st[4 * N];
+
+Data combine(Data x , Data y)
+{
+       if(x.lc == emp.lc)
+        return y;
+    if(y.lc == emp.lc)
+        return x;
+    Data z;
+    z.sum = x.sum + y.sum;
+    
+    z.mini = min(x.mini , y.mini);
+    if(z.mini == x.mini)
+        z.cnt_mini += x.cnt_mini;
+    if(z.mini == y.mini)
+        z.cnt_mini += y.cnt_mini;
+        
+    z.maxi = max(x.maxi , y.maxi);
+    if(z.maxi == x.maxi)
+        z.cnt_maxi += x.cnt_maxi;
+    if(z.maxi == y.maxi)
+        z.cnt_maxi += y.cnt_maxi;
+        
+    z.gc = __gcd(x.gc , y.gc);
+    if(z.gc == x.gc)
+        z.cnt_gc += x.cnt_gc;
+    if(z.gc == y.gc)
+        z.cnt_gc += y.cnt_gc;
+        
+    z.lc = (x.lc * y.lc) / __gcd(x.lc , y.lc);
+    if(z.lc == x.lc)
+        z.cnt_lc += x.cnt_lc;
+    if(z.lc == y.lc)
+        z.cnt_lc += y.cnt_lc;
+    return z;
+}
+
+void fix(int id , int x , int len)
+{
+    st[id].sum = x * len;
+    st[id].mini = st[id].maxi = st[id].gc = st[id].lc = x;
+    st[id].cnt_mini = st[id].cnt_maxi = st[id].cnt_gc = st[id].cnt_lc = len;
+    st[id].lazy = x;
+}
+
+void lazy(int id , int l , int r , int mid)
+{
+    int t = st[id].lazy;
+    if(t != 0)
+    {
+        fix(id * 2 , t , mid - l + 1); /// [l , mid]
+        fix(id * 2 + 1 , t , r - mid); /// [mid + 1 , r]
+    }
+    st[id].lazy = 0;
+}
+
+
+void up(int id , int l , int r , int u , int v , int val)
+{
+    if(l > v || r < u)
+        return;
+    else if(l >= u && r <= v)
+    {
+       /// [l , r] = val
+        fix(id , val , r - l + 1);
+        return;
+    }
+    int mid = (l + r) / 2;
+    lazy(id , l , r , mid);
+    up(id * 2 , l , mid , u , v , val);
+    up(id * 2 + 1 , mid + 1 , r , u , v , val);
+    st[id] = combine(st[id * 2],st[id * 2 + 1]);
+}
+
+Data get(int id , int l , int r , int u , int v)
+{
+    if(l > v || r < u)
+        return emp;
+    if(l >= u && r <= v)
+        return st[id];
+    int mid=(l + r) / 2;
+    lazy(id , l , r , mid);
+    return combine(get(id * 2 , l , mid , u , v),
+                   get(id * 2 + 1, mid+1 , r , u , v));
+}
+
+main()
+{
+    //freopen("gen.inp","r",stdin);
+    ios_base::sync_with_stdio(0);
+    cin.tie(NULL);
+    cin >> n >> q;
+    FOR(i , 1 , n)
+    {
+        int x;
+        cin >> x;
+        up(1 , 1 , n , i , i , x);
+    }
+    FOR(i , 1 , q)
+    {
+        int type;
+        cin >> type;
+        if(type == 1)
+        {
+            int l , r , val;
+            cin >> l >> r >> val;
+            up(1 , 1 , n , l , r , val);
+        }
+        else if(type == 2)
+        {
+            int l , r;
+            cin >> l >> r;
+            cout << get(1 , 1 , n , l , r).sum << "\n";
+        }
+        else if(type == 3)
+        {
+            int l , r;
+            cin >> l >> r;
+            cout << get(1 , 1 , n , l , r).mini << "\n";
+        }
+        else if(type == 4)
+        {
+            int l , r;
+            cin >> l >> r;
+            cout << get(1 , 1 , n , l , r).cnt_mini << "\n";
+        }
+        else if(type == 5)
+        {
+            int l , r;
+            cin >> l >> r;
+            cout << get(1 , 1 , n , l , r).maxi << "\n";
+        }
+        else if(type == 6)
+        {
+            int l , r;
+            cin >> l >> r;
+            cout << get(1 , 1 , n , l , r).cnt_maxi << "\n";
+        }
+        else if(type == 7)
+        {
+            int l , r;
+            cin >> l >> r;
+            cout << get(1 , 1 , n , l , r).gc << "\n";
+        }
+        else if(type == 8)
+        {
+            int l , r;
+            cin >> l >> r;
+            cout << get(1 , 1 , n , l , r).cnt_gc << "\n";
+        }
+        else if(type == 9)
+        {
+            int l , r;
+            cin >> l >> r;
+            cout << get(1 , 1 , n , l , r).lc << "\n";
+        }
+        else if(type == 10)
+        {
+            int l , r;
+            cin >> l >> r;
+            cout << get(1 , 1 , n , l , r).cnt_lc << "\n";
+        }
+    }
+}
+
+/// Code mình sủi k chạy nên lấy của anh Nhâm Tấn :3
