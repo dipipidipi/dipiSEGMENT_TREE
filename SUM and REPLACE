@@ -1,0 +1,120 @@
+//https://i.imgur.com/5zUEWGe.jpeg
+#include <bits/stdc++.h>
+using namespace std;
+
+#define int long long
+
+int n, q;
+set <int> s;
+
+int d[1000011];
+
+void precalc()
+{
+    for (int i = 1; i <= 1000000; ++i)
+    {
+        for (int j = i; j <= 1000000; j+=i)
+            d[j]++;
+    }
+}
+
+int T[4*300011], a[300011];
+
+int query (int id, int l, int r, int u, int v)
+{
+    if (u > r or v < l)
+        return 0;
+    if (u <= l and r <= v) {
+        return T[id];
+    }
+
+    int mid = (l+r)>>1;
+
+    int lef = query (2*id, l, mid, u, v);
+    int righ = query (2*id+1, mid+1, r, u, v);
+
+    return lef + righ;
+}
+void update (int id, int l, int r, int vt, int val) {
+    /// nút id quản lý đoạn từ l->r
+    if (l > vt or r < vt)
+        return;
+    if (l == r) {
+        T[id] = val;
+        return;
+    }
+    int mid = (l+r)>>1;
+    update (2*id, l, mid, vt, val);
+    update (2*id+1, mid+1, r, vt, val);
+
+    T[id] = T[2*id] + T[2*id+1];
+
+}
+
+void read()
+{
+    cin >> n >> q;
+    for (int i = 1; i <= n; ++i)
+    {
+        cin >> a[i];
+        if (a[i] > 2)
+        {
+            s.insert(i);
+        }
+        update(1, 1, n, i, a[i]);
+    }
+}
+
+void solve()
+{
+    while (q--)
+    {
+        int type, l, r;
+        cin >> type;
+        cin >> l >> r;
+
+        if (type == 1)
+        {
+            vector <int> del;
+            auto it = s.lower_bound(l);
+            while (it != s.end() and *(it) <= r)
+            {
+                int pos = *it;
+                a[pos] = d[a[pos]];
+                update(1, 1, n, pos, a[pos]);
+                if (a[pos] <= 2)
+                    del.push_back(pos);
+
+                it++;
+            }
+            for (auto it : del)
+            {
+                s.erase(it);
+            }
+        }
+        else
+        {
+            cout << query(1, 1, n, l, r) << '\n';
+        }
+    }
+}
+
+signed main()
+{
+    // Nhanh hơn
+    cin.tie(0)->sync_with_stdio(0);
+
+    #define task "phcbaka"
+    if (fopen(task ".inp", "r")) // Kiểm tra xem có đọc vào từ file không
+    {
+        freopen(task ".inp", "r", stdin);
+        freopen(task ".out", "w", stdout);
+    }
+
+    read();
+
+    precalc();
+    solve();
+
+    return 0;
+}
